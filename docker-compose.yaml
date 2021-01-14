@@ -1,0 +1,22 @@
+version: '3'
+
+networks:
+   test-network:
+
+services:
+
+    php-service:
+      build:
+         context: .
+         dockerfile: ./docker/php/Dockerfile
+      container_name: php-container
+      env_file: ./app/.env
+      ports:
+        - "8000:8000"
+      volumes:
+        - ./app:/var/www/project
+        - ./log:/var/log
+      networks:
+        - test-network
+
+
