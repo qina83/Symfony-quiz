@@ -16,6 +16,7 @@ class SecurityController extends AbstractController
      * @Route("/test")
      * @param AwsCognitoClient $client
      * @return Response
+     * serve solo per verificare che le chiavi per Congito sono corrette+
      */
     public function test(AwsCognitoClient $client): Response
     {

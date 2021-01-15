@@ -48,4 +48,9 @@ class Quiz
         return null;
     }
 
+    public function getQuestionByIndex(int $index): ?Question{
+        if (isset($this->questions[$index])) return $this->questions[$index];
+        else return null;
+    }
+
 }

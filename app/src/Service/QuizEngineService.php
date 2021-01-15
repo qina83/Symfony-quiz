@@ -8,6 +8,7 @@ use App\Entity\Answer;
 use App\Entity\Question;
 use App\Entity\Quiz;
 use App\Repository\AnswerRepoInterface;
+use App\Repository\GameRepoInterface;
 use App\Repository\QuestionRepoInterface;
 use App\Repository\QuizRepoInterface;
 
@@ -17,32 +18,43 @@ class QuizEngineService implements QuizEngineServiceInterface
     private QuizRepoInterface $quizRepo;
     private QuestionRepoInterface $questionRepo;
     private AnswerRepoInterface $answerRepo;
+    private GameRepoInterface $gameRepo;
 
     /**
      * QuizEngineService constructor.
      * @param QuizRepoInterface $quizRepo
      * @param QuestionRepoInterface $questionRepo
      * @param AnswerRepoInterface $answerRepo
+     * @param GameRepoInterface $gameRepo
      */
-    public function __construct(QuizRepoInterface $quizRepo, QuestionRepoInterface $questionRepo, AnswerRepoInterface $answerRepo)
+    public function __construct(QuizRepoInterface $quizRepo, QuestionRepoInterface $questionRepo, AnswerRepoInterface $answerRepo, GameRepoInterface $gameRepo)
     {
         $this->quizRepo = $quizRepo;
         $this->questionRepo = $questionRepo;
         $this->answerRepo = $answerRepo;
+        $this->gameRepo = $gameRepo;
     }
 
 
-    public function createAQuiz(): Quiz
+    public function createAQuiz(string $player): Quiz
     {
         $quiz = new Quiz();
+        $quiz->setId(1);
+
         $allQuestions = $this->questionRepo->loadQuestions();
-        $selectedQuestions =
+        $selectedQuestions = array_intersect_key($allQuestions, array_flip(array_rand($allQuestions, 10)));
+        $questionList = [];
+        foreach ($selectedQuestions as &$q) {
+            $questionList[] = $q;
+        }
+
+        /*$selectedQuestions =
             array_intersect_key(
-                $allQuestions, array_flip(array_rand($allQuestions, 10))
-            );
-        $quiz->setQuestions($selectedQuestions);
-        $this->quizRepo->saveQuiz($quiz);
-        return $quiz;
+                $allQuestions, array_flip()
+            );*/
+        $quiz->setQuestions($questionList);
+        $this->gameRepo->savePlayerCurrentQuestionIndex($quiz->getId(), $player, 0);
+        return $this->quizRepo->saveQuiz($quiz);
     }
 
     public function answerToQuestion(Answer $answer): Answer
@@ -55,6 +67,8 @@ class QuizEngineService implements QuizEngineServiceInterface
         if ($question == null) throw new \InvalidArgumentException("question not found");
         if (!array_key_exists($answer->getAnswerId(), $question->getAvailableAnswers())) throw new \InvalidArgumentException("answer not found");
 
+        $lastQuestionIndex = $this->gameRepo->loadPlayerCurrentQuestionIndex($answer->getQuizId(), $answer->getPlayer());
+        $this->gameRepo->savePlayerCurrentQuestionIndex($answer->getQuizId(), $answer->getPlayer(), $lastQuestionIndex + 1);
         return $this->answerRepo->saveAnswer($answer);
     }
 
@@ -70,13 +84,19 @@ class QuizEngineService implements QuizEngineServiceInterface
             $question = $quiz->getQuestionById($qId);
             if ($question != null) // it shouldn't happen
             {
-                if ($question->getCorrectAnswerId() == $aId)
-                {
+                if ($question->getCorrectAnswerId() == $aId) {
                     $score++;
                 }
             }
         }
 
         return $score;
+    }
+
+    public function getNextQuestion(int $quizId, string $player): ?Question
+    {
+        $nextIndex = $this->gameRepo->loadPlayerCurrentQuestionIndex($quizId, $player);
+        $quiz = $this->quizRepo->loadQuiz($quizId);
+        return $quiz->getQuestionByIndex($nextIndex);
     }
 }

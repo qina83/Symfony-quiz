@@ -8,6 +8,7 @@ use App\Entity\Question;
 use App\Entity\Quiz;
 use App\Service\QuizEngineService;
 use InvalidArgumentException;
+use phpDocumentor\Reflection\Types\Void_;
 use PHPUnit\Framework\TestCase;
 use Prophecy\Argument;
 use Prophecy\Prophecy\ObjectProphecy;
@@ -22,6 +23,7 @@ class QuizEngineServiceTest extends TestCase
     private ObjectProphecy $quizRepo;
     private ObjectProphecy $questionRepo;
     private ObjectProphecy $answerRepo;
+    private ObjectProphecy $gameRepo;
 
 
     private QuizEngineService $sut;
@@ -33,6 +35,7 @@ class QuizEngineServiceTest extends TestCase
         $this->quizRepo = $this->prophet->prophesize("App\Repository\QuizRepoInterface");
         $this->questionRepo = $this->prophet->prophesize("App\Repository\QuestionRepoInterface");
         $this->answerRepo = $this->prophet->prophesize("App\Repository\AnswerRepoInterface");
+        $this->gameRepo = $this->prophet->prophesize("App\Repository\GameRepoInterface");
 
         $this->questions = [];
         for ($i = 1; $i <= 100; $i++) {
@@ -44,7 +47,8 @@ class QuizEngineServiceTest extends TestCase
         $this->sut = new QuizEngineService(
             $this->quizRepo->reveal(),
             $this->questionRepo->reveal(),
-            $this->answerRepo->reveal());
+            $this->answerRepo->reveal(),
+            $this->gameRepo->reveal());
     }
 
     protected function tearDown(): void
@@ -52,9 +56,17 @@ class QuizEngineServiceTest extends TestCase
         $this->prophet->checkPredictions();
     }
 
+    public function testStupid(){
+        $quiz = $this->sut->createAQuiz("player1");
+        $questions = $quiz->getQuestions();
+        $q = $quiz->getQuestionByIndex(0);
+
+        $this->assertNotNull($q);
+    }
+
     public function testGetQuiz_QuestionsMustBe10()
     {
-        $quiz = $this->sut->createAQuiz();
+        $quiz = $this->sut->createAQuiz("player1");
         $questions = $quiz->getQuestions();
 
         $this->assertCount(10, $questions);
@@ -62,7 +74,7 @@ class QuizEngineServiceTest extends TestCase
 
     public function testGetQuiz_QuestionsMustHaveDistinctIds()
     {
-        $quiz = $this->sut->createAQuiz();
+        $quiz = $this->sut->createAQuiz("player1");
         $questions = $quiz->getQuestions();
         $ids = array_map(
             function (Question $q) {
@@ -74,12 +86,35 @@ class QuizEngineServiceTest extends TestCase
     public function testCreateAQuiz_MustCallSaveQuiz()
     {
         $this->quizRepo->saveQuiz(Argument::any())->shouldBeCalled();
-        $quiz = $this->sut->createAQuiz();
+        $quiz = $this->sut->createAQuiz("player1");
         $this->assertNotNull($quiz);
     }
 
     public function testAnswer_MustCallSaveAnswer()
     {
+        $answer = new Answer("player", 1, 1, 1);
+        $this->answerRepo->saveAnswer(Argument::any())->willReturn($answer);
+        $this->gameRepo->loadPlayerCurrentQuestionIndex(Argument::any(),Argument::any())->willReturn(0);
+        $this->gameRepo->savePlayerCurrentQuestionIndex(Argument::any(),Argument::any(), Argument::any())->shouldBeCalled();
+
+        $question = new Question(1);
+        $question->setAvailableAnswers(array(1, 2, 3, 4));
+
+        $quiz = new Quiz();
+        $quiz->setQuestions(array($question));
+
+        $this->quizRepo->LoadQuiz(Argument::any())->willReturn($quiz);
+
+
+        $this->answerRepo->saveAnswer(Argument::any())->shouldBeCalled();
+
+        $answer = $this->sut->answerToQuestion($answer);
+        $this->assertNotNull($answer);
+    }
+
+    public function testAnswer_MustSaveNewIndex()
+    {
+        $this->gameRepo->loadPlayerCurrentQuestionIndex(Argument::any(),Argument::any())->willReturn(0);
         $answer = new Answer("player", 1, 1, 1);
         $this->answerRepo->saveAnswer(Argument::any())->willReturn($answer);
         $question = new Question(1);
@@ -89,7 +124,7 @@ class QuizEngineServiceTest extends TestCase
         $quiz->setQuestions(array($question));
         $this->quizRepo->LoadQuiz(Argument::any())->willReturn($quiz);
 
-        $this->answerRepo->saveAnswer(Argument::any())->shouldBeCalled();
+        $this->gameRepo->savePlayerCurrentQuestionIndex(Argument::any(), Argument::any(), 1)->shouldBeCalled();
 
         $answer = $this->sut->answerToQuestion($answer);
         $this->assertNotNull($answer);
@@ -180,5 +215,33 @@ class QuizEngineServiceTest extends TestCase
         $this->sut->getPlayerScore(1, "player");
     }
 
+    public function testGetNextQuestion_QuizJustCreated_MustReturnFirstQuestion()
+    {
+        $quiz = $this->sut->createAQuiz("player1");
+        $this->gameRepo->loadPlayerCurrentQuestionIndex(Argument::any(),Argument::any())->willReturn(0);
+        $this->quizRepo->loadQuiz(Argument::any())->willReturn($quiz);
+
+        $nextQuestion = $this->sut->getNextQuestion($quiz->getId(), "player");
+
+        $questions =  $quiz->getQuestions();
+        $question = $questions[0];
+
+        $this->assertCount(10, $questions);
+        $this->assertNotNull($question);
+        //$this->assertEquals(1, $nextQuestion->getId());
+        //$this->assertEquals($question->getId(), $nextQuestion->getId());
+    }
+
+    public function testGetNextQuestion_MustReturnNullIfQuizEnded()
+    {
+        $quiz = $this->sut->createAQuiz("player1");
+        $this->gameRepo->loadPlayerCurrentQuestionIndex(Argument::any(),Argument::any())->willReturn(10);
+        $this->quizRepo->loadQuiz(Argument::any())->willReturn($quiz);
+
+
+        $nextQuestion = $this->sut->getNextQuestion($quiz->getId(), "player");
+
+        $this->assertNull($nextQuestion);
+    }
 
 }
