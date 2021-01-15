@@ -84,7 +84,6 @@ class QuizEngineServiceTest extends TestCase
         $this->answerRepo->saveAnswer(Argument::any())->willReturn($answer);
         $question = new Question(1);
         $question->setAvailableAnswers(array(1, 2, 3, 4));
-        $this->questionRepo->loadQuestion(Argument::any())->willReturn($question);
 
         $quiz = new Quiz();
         $quiz->setQuestions(array($question));
@@ -99,7 +98,6 @@ class QuizEngineServiceTest extends TestCase
     public function testAnswer_QuizNotFound_MustThrowException()
     {
         $this->quizRepo->LoadQuiz(Argument::any())->willReturn(null);
-        $this->questionRepo->loadQuestion(Argument::any())->willReturn(new Question(1));
 
         $this->expectExceptionMessage("quiz not found");
 
@@ -109,7 +107,6 @@ class QuizEngineServiceTest extends TestCase
     public function testAnswer_QuestionIsNotInsideQuiz_MustThrowException()
     {
         $this->quizRepo->LoadQuiz(Argument::any())->willReturn(new Quiz());
-        $this->questionRepo->loadQuestion(Argument::any())->willReturn(new Question(1));
 
         $this->expectExceptionMessage("question not found");
 
@@ -119,7 +116,6 @@ class QuizEngineServiceTest extends TestCase
     public function testAnswer_AnswerIsNotInsideQuestion_MustThrowException()
     {
         $question = new Question(1);
-        $this->questionRepo->loadQuestion(Argument::any())->willReturn($question);
 
         $quiz = new Quiz();
         $quiz->setQuestions(array($question));

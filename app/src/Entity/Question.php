@@ -9,7 +9,7 @@ class Question
     private ?int $id = null;
     private string $question;
     private array $availableAnswers = [];
-    private int $topicId;
+    //private int $topicId;
     private int $correctAnswerId;
 
     /**
@@ -25,18 +25,18 @@ class Question
     /**
      * @return int
      */
-    public function getTopicId(): int
+    /*public function getTopicId(): int
     {
         return $this->topicId;
-    }
+    }*/
 
     /**
      * @param int $topicId
      */
-    public function setTopicId(int $topicId): void
+  /*  public function setTopicId(int $topicId): void
     {
         $this->topicId = $topicId;
-    }
+    }*/
 
     /**
      * @return int|null

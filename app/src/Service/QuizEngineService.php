@@ -47,11 +47,12 @@ class QuizEngineService implements QuizEngineServiceInterface
 
     public function answerToQuestion(Answer $answer): Answer
     {
-        $question = $this->questionRepo->loadQuestion($answer->getQuestionId());
         $quiz = $this->quizRepo->loadQuiz($answer->getQuizId());
-
         if ($quiz == null) throw new \InvalidArgumentException("quiz not found");
-        if ($quiz->getQuestionById($answer->getQuestionId()) == null) throw new \InvalidArgumentException("question not found");
+
+        $question = $quiz->getQuestionById($answer->getQuestionId());
+
+        if ($question == null) throw new \InvalidArgumentException("question not found");
         if (!array_key_exists($answer->getAnswerId(), $question->getAvailableAnswers())) throw new \InvalidArgumentException("answer not found");
 
         return $this->answerRepo->saveAnswer($answer);
