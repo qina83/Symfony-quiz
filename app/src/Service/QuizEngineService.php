@@ -27,7 +27,10 @@ class QuizEngineService implements QuizEngineServiceInterface
      * @param AnswerRepoInterface $answerRepo
      * @param GameRepoInterface $gameRepo
      */
-    public function __construct(QuizRepoInterface $quizRepo, QuestionRepoInterface $questionRepo, AnswerRepoInterface $answerRepo, GameRepoInterface $gameRepo)
+    public function __construct(QuizRepoInterface $quizRepo,
+                                QuestionRepoInterface $questionRepo,
+                                AnswerRepoInterface $answerRepo,
+                                GameRepoInterface $gameRepo)
     {
         $this->quizRepo = $quizRepo;
         $this->questionRepo = $questionRepo;

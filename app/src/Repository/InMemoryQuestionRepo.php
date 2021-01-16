@@ -9,7 +9,9 @@ class InMemoryQuestionRepo implements QuestionRepoInterface
 {
     private array $questions = [];
 
-    public function __construct(){
+    public function __construct(?array $questions = null){
+        if ($questions != null) $this->questions = $questions;
+        else
         for ($i = 0; $i<100; $i++){
             $question = new Question($i);
             $question->setAvailableAnswers(array("correctAnswer".$i, "wrongAnswer".$i ));
