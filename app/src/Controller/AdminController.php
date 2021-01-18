@@ -16,16 +16,14 @@ class AdminController extends AbstractController
 {
 
     private AuthenticationUtils $authenticationUtils;
-    private QuestionsServiceInterface $questionService;
 
     /**
      * AdminController constructor.
      * @param AuthenticationUtils $authenticationUtils
      */
-    public function __construct(QuestionsServiceInterface $questionService, AuthenticationUtils $authenticationUtils)
+    public function __construct( AuthenticationUtils $authenticationUtils)
     {
         $this->authenticationUtils = $authenticationUtils;
-        $this->questionService = $questionService;
     }
 
 

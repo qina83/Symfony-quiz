@@ -33,3 +33,5 @@ services:
         arguments:
             $poolId: '%env(COGNITO_POOL_ID)%'
             $clientId: '%env(COGNITO_CLIENT_ID)%'
+
+    App\Service\QuizEngineServiceInterface: '@App\Service\QuizEngineService'

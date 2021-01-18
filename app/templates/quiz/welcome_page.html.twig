@@ -1,0 +1,10 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Quiz start page{% endblock %}
+
+{% block body %}
+    <form action="/quiz/start" method="post">
+        <input type="text" required min="3" name="player" />
+        <input type="submit" value="START!" />
+    </form>
+{% endblock %}

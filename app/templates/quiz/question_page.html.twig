@@ -1,0 +1,21 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Quiz start page{% endblock %}
+
+{% block body %}
+    Player: {{ player }}
+    </br>
+    Question: {{ question.question }}
+    <form action="/quiz/next" method="post">
+        <input type="hidden" name="player" value="{{ player }}">
+        <input type="hidden" name="quizId" value="{{ quizId }}">
+        <input type="hidden" name="questionId" value="{{ question.id }}">
+        <br/>
+        {% for answer in question.availableAnswers %}
+        <input type="radio" id="loop.index0" name="answer" value="{{loop.index0}}" required>
+        <label for="loop.index0">{{ answer }}</label><br/>
+            {% endfor %}
+        <br/>
+        <input type="submit" value="Answer!"/>
+    </form>
+{% endblock %}

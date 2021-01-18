@@ -50,11 +50,6 @@ class QuizEngineService implements QuizEngineServiceInterface
         foreach ($selectedQuestions as &$q) {
             $questionList[] = $q;
         }
-
-        /*$selectedQuestions =
-            array_intersect_key(
-                $allQuestions, array_flip()
-            );*/
         $quiz->setQuestions($questionList);
         $this->gameRepo->savePlayerCurrentQuestionIndex($quiz->getId(), $player, 0);
         return $this->quizRepo->saveQuiz($quiz);

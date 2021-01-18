@@ -14,9 +14,10 @@ class InMemoryQuestionRepo implements QuestionRepoInterface
         else
         for ($i = 0; $i<100; $i++){
             $question = new Question($i);
+            $question->setQuestion("Question number ".$i);
             $question->setAvailableAnswers(array("correctAnswer".$i, "wrongAnswer".$i ));
             $question->setCorrectAnswerId(0);
-            $questions[] = $question;
+            $this->questions[] = $question;
         }
     }
 
