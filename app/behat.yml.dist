@@ -1,0 +1,12 @@
+default:
+    suites:
+        default:
+            contexts:
+                - App\Tests\Behat\DemoContext
+                - App\Tests\Behat\FirstTestContext
+                - App\Tests\Behat\QuizCreationContext
+
+    extensions:
+        FriendsOfBehat\SymfonyExtension:
+            kernel:
+                environment: test
