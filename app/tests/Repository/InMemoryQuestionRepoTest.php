@@ -2,11 +2,8 @@
 
 namespace App\Tests\Repository;
 
-use App\Entity\Answer;
 use App\Entity\Question;
 use App\Repository\InMemoryQuestionRepo;
-use Symfony\Component\HttpFoundation\Session\Session;
-use Webmozart\Assert\Assert;
 
 class InMemoryQuestionRepoTest extends InMemoryBaseTest
 {
